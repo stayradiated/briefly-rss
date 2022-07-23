@@ -1,0 +1,5 @@
+query GetTapeById($id: uuid!) {
+  tape_by_pk(id: $id) {
+    path
+  }
+}

@@ -1,0 +1,23 @@
+query GetFriendsTapes($now: timestamptz, $user_id: uuid!) {
+  friend(
+    where: {user_id: {_eq: $user_id}}
+    order_by: {friend_profile: {tapes_aggregate: {max: {created_at: desc_nulls_last}}}}
+  ) {
+    friend_profile {
+      id
+      username
+      avatar_id
+      tapes(order_by: {created_at: desc}, where: {expires_at: {_gt: $now}}) {
+        id
+        path
+        duration
+        created_at
+        tape_snap_files {
+          id
+          path
+          second
+        }
+      }
+    }
+  }
+}
