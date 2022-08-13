@@ -1,0 +1,19 @@
+query GetMyTapes($user_id: uuid!, $now: timestamptz) {
+  profile_by_pk(id: $user_id) {
+    id
+    username
+    avatar_id
+    tapes(order_by: { created_at: desc }, where:{ expires_at: { _gt: $now }}) {
+      duration
+      created_at
+      id
+      private_comments
+      is_public
+      is_multicast
+      tape_snap_files(limit: 1) {
+        path
+      }
+      path
+    }
+  }
+}

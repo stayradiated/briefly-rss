@@ -1,27 +1,33 @@
 {
-  "name": "@stayradiated/briefly-rss",
+  "name": "@stayradiated/debrief",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "sideEffects": false,
   "scripts": {
-    "build": "ncc build --out ./bin ./src/index.ts",
+    "build": "remix build",
+    "start": "remix-serve build",
+    "dev": "remix dev",
     "tidy": "xo --fix",
-    "test": "ava",
     "codegen": "gql-gen --config graphql.codegen.js"
   },
-  "author": {
-    "name": "George Czabania"
+  "engines": {
+    "node": ">=14"
   },
   "license": "ISC",
   "dependencies": {
-    "@sinclair/typebox": "0.24.20",
+    "@remix-run/node": "^1.6.8",
+    "@remix-run/react": "^1.6.8",
+    "@remix-run/serve": "^1.6.8",
     "date-fns": "2.29.1",
-    "env-schema": "5.0.0",
-    "fastify": "4.3.0",
-    "got": "12.1.0",
+    "execa": "6.1.0",
     "graphql": "16.5.0",
     "graphql-request": "4.3.0",
-    "graphql-tag": "2.12.6"
+    "graphql-tag": "2.12.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remix-domains": "0.3.2",
+    "tempy": "3.0.0",
+    "zod": "3.18.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "2.9.1",
@@ -29,35 +35,17 @@
     "@graphql-codegen/typescript": "2.7.2",
     "@graphql-codegen/typescript-graphql-request": "4.5.2",
     "@graphql-codegen/typescript-operations": "2.5.2",
-    "@vercel/ncc": "0.34.0",
-    "ava": "4.3.1",
-    "del-cli": "5.0.0",
+    "@remix-run/dev": "^1.6.8",
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
     "typescript": "4.7.4",
     "xo": "0.51.0"
   },
   "__comment": "The following configs are managed by `npx @stayradiated/jsconfig`",
-  "ava": {
-    "verbose": true
-  },
   "xo": {
     "space": true,
     "semicolon": false,
-    "prettier": true,
-    "rules": {
-      "ava/assertion-arguments": "off",
-      "ava/no-ignored-test-files": [
-        "error",
-        {
-          "files": [
-            "**/src/**/*.test.ts"
-          ],
-          "extensions": [
-            "ts"
-          ]
-        }
-      ],
-      "unicorn/prefer-node-protocol": "off"
-    }
+    "prettier": true
   },
   "prettier": {
     "arrowParens": "always",

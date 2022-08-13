@@ -3767,12 +3767,34 @@ export type GetFriendsTapesQueryVariables = Exact<{
 
 export type GetFriendsTapesQuery = { __typename?: 'query_root', friend: Array<{ __typename?: 'friend', friend_profile?: { __typename?: 'profile', id: any, username?: string | null, avatar_id?: any | null, tapes: Array<{ __typename?: 'tape', id: any, path: string, duration: number, created_at: any, tape_snap_files: Array<{ __typename?: 'tape_snap_file', id: any, path: string, second: number }> }> } | null }> };
 
+export type GetMyTapesQueryVariables = Exact<{
+  user_id: Scalars['uuid'];
+  now?: InputMaybe<Scalars['timestamptz']>;
+}>;
+
+
+export type GetMyTapesQuery = { __typename?: 'query_root', profile_by_pk?: { __typename?: 'profile', id: any, username?: string | null, avatar_id?: any | null, tapes: Array<{ __typename?: 'tape', duration: number, created_at: any, id: any, private_comments: boolean, is_public: boolean, is_multicast: boolean, path: string, tape_snap_files: Array<{ __typename?: 'tape_snap_file', path: string }> }> } | null };
+
 export type GetTapeByIdQueryVariables = Exact<{
   id: Scalars['uuid'];
 }>;
 
 
 export type GetTapeByIdQuery = { __typename?: 'query_root', tape_by_pk?: { __typename?: 'tape', path: string } | null };
+
+export type InsertTapeMutationVariables = Exact<{
+  file_id?: InputMaybe<Scalars['uuid']>;
+  duration?: InputMaybe<Scalars['Int']>;
+  path?: InputMaybe<Scalars['String']>;
+  waves?: InputMaybe<Scalars['jsonb']>;
+  expires_at?: InputMaybe<Scalars['timestamptz']>;
+  is_public?: InputMaybe<Scalars['Boolean']>;
+  is_multicast?: InputMaybe<Scalars['Boolean']>;
+  private_comments?: InputMaybe<Scalars['Boolean']>;
+}>;
+
+
+export type InsertTapeMutation = { __typename?: 'mutation_root', insert_tape_one?: { __typename?: 'tape', id: any } | null };
 
 
 export const GetFriendsTapesDocument = gql`
@@ -3800,10 +3822,40 @@ export const GetFriendsTapesDocument = gql`
   }
 }
     `;
+export const GetMyTapesDocument = gql`
+    query GetMyTapes($user_id: uuid!, $now: timestamptz) {
+  profile_by_pk(id: $user_id) {
+    id
+    username
+    avatar_id
+    tapes(order_by: {created_at: desc}, where: {expires_at: {_gt: $now}}) {
+      duration
+      created_at
+      id
+      private_comments
+      is_public
+      is_multicast
+      tape_snap_files(limit: 1) {
+        path
+      }
+      path
+    }
+  }
+}
+    `;
 export const GetTapeByIdDocument = gql`
     query GetTapeById($id: uuid!) {
   tape_by_pk(id: $id) {
     path
+  }
+}
+    `;
+export const InsertTapeDocument = gql`
+    mutation InsertTape($file_id: uuid, $duration: Int, $path: String, $waves: jsonb, $expires_at: timestamptz, $is_public: Boolean = false, $is_multicast: Boolean = false, $private_comments: Boolean = false) {
+  insert_tape_one(
+    object: {file_id: $file_id, is_public: $is_public, is_multicast: $is_multicast, duration: $duration, path: $path, private_comments: $private_comments, waves: $waves, expires_at: $expires_at}
+  ) {
+    id
   }
 }
     `;
@@ -3818,8 +3870,14 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     GetFriendsTapes(variables: GetFriendsTapesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<GetFriendsTapesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetFriendsTapesQuery>(GetFriendsTapesDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetFriendsTapes', 'query');
     },
+    GetMyTapes(variables: GetMyTapesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<GetMyTapesQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetMyTapesQuery>(GetMyTapesDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetMyTapes', 'query');
+    },
     GetTapeById(variables: GetTapeByIdQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<GetTapeByIdQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetTapeByIdQuery>(GetTapeByIdDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'GetTapeById', 'query');
+    },
+    InsertTape(variables?: InsertTapeMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<InsertTapeMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<InsertTapeMutation>(InsertTapeDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'InsertTape', 'mutation');
     }
   };
 }

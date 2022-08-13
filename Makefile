@@ -1,3 +1,6 @@
 build:
 	pnpm run build
-	docker build -t stayradiated/briefly-rss:latest .
+	docker build -t stayradiated/debrief:latest .
+
+run:
+	docker run --name=debrief --rm -p 7777:7777 --env-file .env stayradiated/debrief
