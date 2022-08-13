@@ -9,18 +9,28 @@ module.exports = {
       // },
     },
   ],
-  documents: ['./src/*.graphql'],
+  documents: ['./app/**/*.graphql'],
   overwrite: true,
   generates: {
     './graphql.schema.json': {
       plugins: [ "introspection" ]
     },
-    './src/graphql/generated.ts': {
+    './app/briefly/graphql/generated.ts': {
       plugins: [
         'typescript',
         'typescript-operations',
         'typescript-graphql-request',
       ],
+      config: {
+        scalars: {
+          'numeric': 'number',
+          'smallint': 'number',
+          'timestamp': 'string',
+          'timestamptz': 'string',
+          'uuid': 'string',
+          'bpchar': 'string'
+        }
+      }
     }
   },
 }

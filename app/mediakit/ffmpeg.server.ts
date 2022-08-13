@@ -1,7 +1,7 @@
-import { execa } from 'execa'
+import { execa } from "execa";
 
 const ffmpeg = async (args: string[]) => {
-  await execa('ffmpeg', args)
-}
+  await execa("ffmpeg", args);
+};
 
-export { ffmpeg }
+export { ffmpeg };

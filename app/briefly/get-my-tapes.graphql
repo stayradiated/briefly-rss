@@ -3,7 +3,10 @@ query GetMyTapes($user_id: uuid!, $now: timestamptz) {
     id
     username
     avatar_id
-    tapes(order_by: { created_at: desc }, where:{ expires_at: { _gt: $now }}) {
+    tapes(
+      order_by: { created_at: desc }
+      where: { expires_at: { _gt: $now } }
+    ) {
       duration
       created_at
       id

@@ -1,5 +1,31 @@
 query GetTapeById($id: uuid!) {
   tape_by_pk(id: $id) {
     path
+    created_at
+    duration
+    profile {
+      username
+    }
+    tape_snap_files {
+      path
+    }
+    comments(
+      where: { parent_comment_id: { _is_null: true } }
+      order_by: { created_at: desc }
+    ) {
+      body
+      created_at
+      profile {
+        username
+      }
+
+      child_comments(order_by: { created_at: asc }) {
+        body
+        created_at
+        profile {
+          username
+        }
+      }
+    }
   }
 }

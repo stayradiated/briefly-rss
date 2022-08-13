@@ -1,22 +1,22 @@
 mutation InsertTape(
-  $file_id: uuid,
-  $duration: Int,
-  $path: String,
-  $waves: jsonb,
-  $expires_at: timestamptz,
-  $is_public: Boolean = false,
-  $is_multicast: Boolean = false,
+  $file_id: uuid
+  $duration: Int
+  $path: String
+  $waves: jsonb
+  $expires_at: timestamptz
+  $is_public: Boolean = false
+  $is_multicast: Boolean = false
   $private_comments: Boolean = false
 ) {
   insert_tape_one(
     object: {
-      file_id: $file_id,
-      is_public: $is_public,
-      is_multicast: $is_multicast,
-      duration: $duration,
-      path: $path,
-      private_comments: $private_comments,
-      waves: $waves,
+      file_id: $file_id
+      is_public: $is_public
+      is_multicast: $is_multicast
+      duration: $duration
+      path: $path
+      private_comments: $private_comments
+      waves: $waves
       expires_at: $expires_at
     }
   ) {

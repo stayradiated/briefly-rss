@@ -1,50 +1,88 @@
-import { createCookieSessionStorage, Session as CookieSession } from "@remix-run/node"
+import {
+  createCookieSessionStorage,
+  Session as CookieSession,
+} from "@remix-run/node";
 
-import { config } from './config.server'
+import { config } from "./config.server";
+import * as auth from "./auth.server";
+import { parseBrieflyJWT } from "./jwt.server";
 
-type Session = {
-  userUID: string,
-  accessToken: string,
-  cookie: CookieSession
-}
+type GuestSession = {
+  email: undefined;
+  userUID: undefined;
+  accessToken: undefined;
+  refreshToken: undefined;
+  cookie: CookieSession;
+};
+
+type UserSession = {
+  email: string;
+  userUID: string;
+  accessToken: string;
+  refreshToken: string;
+  cookie: CookieSession;
+};
+
+type Session = GuestSession | UserSession;
 
 const store = createCookieSessionStorage({
-    cookie: {
-      name: '__session',
-      secrets: [config.COOKIE_SECRET],
-      sameSite: 'lax',
-      httpOnly: true,
-      secure: false,
-      path: '/',
-      // Set session expiration to 5 days
-      maxAge: 60 * 60 * 24 * 5,
-    },
-  })
+  cookie: {
+    name: "__session",
+    secrets: [config.COOKIE_SECRET],
+    sameSite: "lax",
+    httpOnly: true,
+    secure: false,
+    path: "/",
+    // Set session expiration to 5 days
+    maxAge: 60 * 60 * 24 * 5,
+  },
+});
 
 const getSession = async (request: Request): Promise<Session> => {
-  const cookie = await store.getSession(
-    request.headers.get("Cookie")
-  );
+  const cookie = await store.getSession(request.headers.get("Cookie"));
 
-  const userUID = cookie.get('userUID')
-  const accessToken = cookie.get('accessToken')
+  const email = cookie.get("email");
+  const accessToken = cookie.get("accessToken");
+  const refreshToken = cookie.get("refreshToken");
 
-  return {
-    userUID,
-    accessToken,
-    cookie,
+  const claims = parseBrieflyJWT(accessToken);
+  if (claims instanceof Error) {
+    if (refreshToken) {
+      const nextSession = await auth.refreshToken({ refreshToken });
+      console.log({ nextSession });
+      if (nextSession instanceof Error) {
+        throw nextSession;
+      }
+      return nextSession;
+    }
+    return {
+      email: undefined,
+      userUID: undefined,
+      accessToken: undefined,
+      refreshToken: undefined,
+      cookie,
+    };
+  } else {
+    return {
+      email,
+      userUID: claims.userUID,
+      accessToken,
+      refreshToken,
+      cookie,
+    };
   }
-}
+};
 
 const commitSession = (session: Session): Promise<string> => {
-  session.cookie.set('userUID', session.userUID)
-  session.cookie.set('accessToken', session.accessToken)
-  return store.commitSession(session.cookie)
-}
+  session.cookie.set("email", session.email);
+  session.cookie.set("accessToken", session.accessToken);
+  session.cookie.set("refreshToken", session.refreshToken);
+  return store.commitSession(session.cookie);
+};
 
 const destroySession = (session: Session): Promise<string> => {
-  return store.destroySession(session.cookie)
-}
+  return store.destroySession(session.cookie);
+};
 
-export { getSession, commitSession, destroySession } 
-export type { Session }
+export { getSession, commitSession, destroySession };
+export type { GuestSession, UserSession, Session };

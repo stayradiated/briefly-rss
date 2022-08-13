@@ -1,9 +1,9 @@
-import * as fs from 'fs/promises'
+import * as fs from "fs/promises";
 
 const cleanup = async (filepath: string | undefined) => {
-  if (typeof filepath === 'string') {
-    await fs.unlink(filepath)
+  if (typeof filepath === "string") {
+    await fs.unlink(filepath);
   }
-}
+};
 
-export { cleanup }
+export { cleanup };

@@ -1,16 +1,16 @@
-import { ActionFunction, redirect } from '@remix-run/node'
+import { ActionFunction, redirect } from "@remix-run/node";
 
-import * as briefly from '../briefly'
+import * as briefly from "../briefly";
 
 export const action: ActionFunction = async ({ request }) => {
-  const session = await briefly.getSession(request)
+  const session = await briefly.getSession(request);
 
-  return redirect('/', {
+  return redirect("/", {
     headers: {
-      'Set-Cookie': await briefly.destroySession(session)
-    }
-  })
-}
+      "Set-Cookie": await briefly.destroySession(session),
+    },
+  });
+};
 
 const LogoutRoute = () => {
   return (
@@ -18,7 +18,7 @@ const LogoutRoute = () => {
       <p>Are you sure?</p>
       <input type="submit" value="Logout" />
     </form>
-  )
-}
+  );
+};
 
-export default LogoutRoute
+export default LogoutRoute;
