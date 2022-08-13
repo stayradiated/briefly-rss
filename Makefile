@@ -1,3 +1,5 @@
+.PHONY: build run
+
 build:
 	pnpm run build
 	docker build -t stayradiated/debrief:latest .

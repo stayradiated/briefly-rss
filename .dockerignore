@@ -1,1 +1,8 @@
-node_modules
+*
+
+!./package.json
+!./pnpm-lock.yaml
+!./app
+!./remix.config.js
+!./remix.env.js
+!./tsconfig.json

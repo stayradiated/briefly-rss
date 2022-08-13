@@ -7,7 +7,6 @@
     "build": "remix build",
     "start": "remix-serve build",
     "dev": "remix dev",
-    "tidy": "xo --fix",
     "codegen": "gql-gen --config graphql.codegen.js"
   },
   "engines": {
@@ -36,24 +35,9 @@
     "@graphql-codegen/typescript-graphql-request": "4.5.2",
     "@graphql-codegen/typescript-operations": "2.5.2",
     "@remix-run/dev": "^1.6.8",
+    "@types/node": "18.7.3",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
-    "typescript": "4.7.4",
-    "xo": "0.51.0"
-  },
-  "__comment": "The following configs are managed by `npx @stayradiated/jsconfig`",
-  "xo": {
-    "space": true,
-    "semicolon": false,
-    "prettier": true
-  },
-  "prettier": {
-    "arrowParens": "always",
-    "bracketSpacing": true,
-    "semi": false,
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "all",
-    "useTabs": false
+    "typescript": "4.7.4"
   }
 }
