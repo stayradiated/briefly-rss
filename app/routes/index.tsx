@@ -11,7 +11,14 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({ request }) => {
   const session = await briefly.getSession(request);
   const isLoggedIn = Boolean(session.accessToken);
-  return json<LoaderData>({ isLoggedIn, email: session.email });
+  return json<LoaderData>(
+    { isLoggedIn, email: session.email },
+    {
+      headers: {
+        "Set-Cookie": await briefly.commitSession(session),
+      },
+    }
+  );
 };
 
 const IndexRoute = () => {

@@ -58,7 +58,7 @@ const FriendItem = (props: FriendItemProps) => {
       )}
       <ul>
         {friend.tapes.map((tape) => (
-          <TapeItem tape={tape} />
+          <TapeItem key={tape.id} tape={tape} />
         ))}
       </ul>
     </li>
@@ -102,7 +102,7 @@ const FriendsTapesRoute = () => {
       <h1>Friends Tapes</h1>
       <ul>
         {friends.map((friend) => (
-          <FriendItem friend={friend} />
+          <FriendItem key={friend.id} friend={friend} />
         ))}
       </ul>
     </main>

@@ -7,16 +7,19 @@ query GetMyTapes($user_id: uuid!, $now: timestamptz) {
       order_by: { created_at: desc }
       where: { expires_at: { _gt: $now } }
     ) {
+      id
       duration
       created_at
-      id
-      private_comments
+      path
       is_public
-      is_multicast
       tape_snap_files(limit: 1) {
         path
       }
-      path
+      comments_aggregate {
+        aggregate {
+          count
+        }
+      }
     }
   }
 }

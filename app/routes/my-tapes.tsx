@@ -27,7 +27,14 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   const tapes = result.profile_by_pk?.tapes ?? [];
 
-  return json<LoaderData>({ tapes });
+  return json<LoaderData>(
+    { tapes },
+    {
+      headers: {
+        "Set-Cookie": await briefly.commitSession(session),
+      },
+    }
+  );
 };
 
 type TapeItemProps = {
@@ -40,11 +47,20 @@ const TapeItem = (props: TapeItemProps) => {
   const createdAt = dateFns.parseISO(tape.created_at);
   const duration = formatDuration(tape.duration);
 
+  const ICON_PUBLIC = "📢";
+  const ICON_PRIVATE = "✉️";
+  const ICON_IMAGE = "🖼️";
+  const ICON_COMMENT = "💬";
+
   return (
     <li>
       <Link to={`/tape/${tape.id}`}>
-        {tape.is_public ? "📢" : "✉️"} {dateFns.format(createdAt, "EEEE p")} [
-        {duration}]
+        {tape.is_public ? ICON_PUBLIC : ICON_PRIVATE}{" "}
+        {dateFns.format(createdAt, "EEEE p")} [{duration}]{" "}
+        {tape.tape_snap_files.length > 0 ? ICON_IMAGE : ""}
+        {(tape.comments_aggregate.aggregate?.count ?? 0) > 0
+          ? ICON_COMMENT
+          : ""}
       </Link>
     </li>
   );

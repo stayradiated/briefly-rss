@@ -1,5 +1,6 @@
 query GetTapeById($id: uuid!) {
   tape_by_pk(id: $id) {
+    id
     path
     created_at
     duration
@@ -13,6 +14,7 @@ query GetTapeById($id: uuid!) {
       where: { parent_comment_id: { _is_null: true } }
       order_by: { created_at: desc }
     ) {
+      id
       body
       created_at
       profile {
@@ -20,6 +22,7 @@ query GetTapeById($id: uuid!) {
       }
 
       child_comments(order_by: { created_at: asc }) {
+        id
         body
         created_at
         profile {

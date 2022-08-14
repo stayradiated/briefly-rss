@@ -26,7 +26,54 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     throw new Error("Could not find that tape!");
   }
 
-  return json<LoaderData>({ tape });
+  return json<LoaderData>(
+    { tape },
+    {
+      headers: {
+        "Set-Cookie": await briefly.commitSession(session),
+      },
+    }
+  );
+};
+
+type Comment = {
+  created_at: string;
+  profile?: { username?: string | null } | null;
+  body: string;
+  child_comments?: Comment[];
+};
+
+type CommentListProps = {
+  comments: Comment[];
+};
+
+const CommentList: React.FC<CommentListProps> = (props) => {
+  const { comments } = props;
+  if (comments.length === 0) {
+    return (
+      <p>
+        <em>No comments yet…</em>
+      </p>
+    );
+  }
+  return (
+    <>
+      {comments.map((comment) => {
+        const date = dateFns.format(dateFns.parseISO(comment.created_at), "p");
+        return (
+          <p key={comment.id}>
+            <strong>{comment.profile?.username}</strong> {comment.body}{" "}
+            <em>{date}</em>
+            {comment.child_comments && comment.child_comments.length > 0 && (
+              <ul>
+                <CommentList comments={comment.child_comments} />
+              </ul>
+            )}
+          </p>
+        );
+      })}
+    </>
+  );
 };
 
 const TapeRoute = () => {
@@ -39,20 +86,7 @@ const TapeRoute = () => {
       <h2>{tape.profile?.username}</h2>
       <h3>{tapeDate}</h3>
       <audio src={tape.path} autoPlay controls />
-      {tape.comments.map((comment) => {
-        const date = dateFns.format(dateFns.parseISO(comment.created_at), "p");
-        return (
-          <p>
-            <strong>{comment.profile?.username}</strong> {comment.body}{" "}
-            <em>{date}</em>
-          </p>
-        );
-      })}
-      {tape.comments.length === 0 && (
-        <p>
-          <em>No comments yet…</em>
-        </p>
-      )}
+      <CommentList comments={tape.comments} />
       {tape.tape_snap_files.map((file) => (
         <img src={file.path} />
       ))}
