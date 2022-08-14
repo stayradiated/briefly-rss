@@ -73,7 +73,10 @@ const MyTapesRoute = () => {
 
   return (
     <main>
-      <h1>My Tapes</h1>
+      <h1>
+        <Link to="/">Briefly</Link>
+      </h1>
+      <h2>My Tapes</h2>
       <ul>
         {tapes.map((tape) => (
           <TapeItem tape={tape} />

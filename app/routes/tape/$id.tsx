@@ -1,5 +1,5 @@
 import { LoaderFunction, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Link } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import * as dateFns from "date-fns";
 
@@ -84,6 +84,9 @@ const TapeRoute = () => {
 
   return (
     <main>
+      <h1>
+        <Link to="/">Briefly</Link>
+      </h1>
       <h2>{tape.profile?.username}</h2>
       <h3>{tapeDate}</h3>
       <audio src={tape.path} autoPlay controls />

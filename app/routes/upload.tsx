@@ -12,7 +12,7 @@ import {
   json,
   redirect,
 } from "@remix-run/node";
-import { Link, Form } from "@remix-run/react";
+import { Link, Form, useTransition, useActionData } from "@remix-run/react";
 import * as dateFns from "date-fns";
 import invariant from "tiny-invariant";
 
@@ -20,6 +20,10 @@ import * as briefly from "../briefly";
 import * as mediakit from "../mediakit";
 
 export const links: LinksFunction = () => [...UploadForm.links];
+
+type ActionData = {
+  tapeUID: string;
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const session = await briefly.getSession(request);
@@ -79,7 +83,8 @@ export const action: ActionFunction = async ({ request }) => {
       private_comments: false,
     });
 
-    console.log({ tape });
+    const tapeUID = tape.insert_tape_one?.id;
+    invariant(typeof tapeUID === "string", "Could not insert tape!");
 
     const imageList = files.filter((file) => file.mediaType === "image");
 
@@ -99,7 +104,7 @@ export const action: ActionFunction = async ({ request }) => {
         );
 
         return {
-          tape_id: tape.insert_tape_one!.id,
+          tape_id: tapeUID,
           file_id: uploadedImage.id,
           path: presignedURL.url,
           second: index * 10,
@@ -108,13 +113,15 @@ export const action: ActionFunction = async ({ request }) => {
     );
 
     await sdk.InsertTapeSnaps({ snaps });
+
+    return json<ActionData>({
+      tapeUID,
+    });
   } finally {
     await Promise.all(
       cleanupList.map((filepath) => mediakit.cleanup(filepath))
     );
   }
-
-  return null;
 };
 
 type FileItemProps = {
@@ -163,6 +170,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 const UploadDash = () => {
+  const transition = useTransition();
+  const actionData = useActionData<ActionData>();
+
   const [files, setFiles] = useState<UploadedFile[]>([]);
 
   const handleComplete: UploadFormOnCompleteFn = (files) => {
@@ -174,6 +184,7 @@ const UploadDash = () => {
       <h1>
         <Link to="/">Briefly</Link>
       </h1>
+      <h2>Create Tape</h2>
       <ClientOnly>
         {() => <UploadForm onComplete={handleComplete} />}
       </ClientOnly>
@@ -183,7 +194,18 @@ const UploadDash = () => {
             <FileItem file={file} />
           ))}
         </ul>
-        <button>Create Tape</button>
+        <button
+          disabled={transition.state !== "idle" || Boolean(actionData?.tapeUID)}
+        >
+          Create Tape
+        </button>
+        {transition.state !== "idle" && <p>Creating tape...</p>}
+        {actionData?.tapeUID && (
+          <p>
+            Success!{" "}
+            <Link to={`/tape/${actionData.tapeUID}`}>Check out your tape</Link>.
+          </p>
+        )}
       </Form>
     </main>
   );

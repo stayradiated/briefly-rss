@@ -99,7 +99,10 @@ const FriendsTapesRoute = () => {
 
   return (
     <main>
-      <h1>Friends Tapes</h1>
+      <h1>
+        <Link to="/">Briefly</Link>
+      </h1>
+      <h2>Friends Tapes</h2>
       <ul>
         {friends.map((friend) => (
           <FriendItem key={friend.id} friend={friend} />
