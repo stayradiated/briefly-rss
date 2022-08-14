@@ -1,3 +1,4 @@
+import * as z from "zod";
 import {
   createCookieSessionStorage,
   Session as CookieSession,
@@ -7,6 +8,8 @@ import { config } from "./config.server";
 import * as auth from "./auth.server";
 import { parseBrieflyJWT } from "./jwt.server";
 
+const CookieSessionSchema: z.Schema<CookieSession> = z.any() as any;
+
 type GuestSession = {
   email: undefined;
   userUID: undefined;
@@ -15,13 +18,15 @@ type GuestSession = {
   cookie: CookieSession;
 };
 
-type UserSession = {
-  email: string;
-  userUID: string;
-  accessToken: string;
-  refreshToken: string;
-  cookie: CookieSession;
-};
+const userSessionSchema = z.object({
+  email: z.string(),
+  userUID: z.string(),
+  accessToken: z.string(),
+  refreshToken: z.string(),
+  cookie: CookieSessionSchema,
+});
+
+type UserSession = z.infer<typeof userSessionSchema>;
 
 type Session = GuestSession | UserSession;
 
@@ -84,5 +89,5 @@ const destroySession = (session: Session): Promise<string> => {
   return store.destroySession(session.cookie);
 };
 
-export { getSession, commitSession, destroySession };
+export { getSession, commitSession, destroySession, userSessionSchema };
 export type { GuestSession, UserSession, Session };

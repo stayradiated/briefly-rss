@@ -19,16 +19,21 @@ type UploadResponse = {
   uploadedByUserId: string;
 };
 
-const upload = async (
-  session: Session,
-  audioFilepath: string
-): Promise<UploadResponse> => {
+type UploadOptions = {
+  session: Session;
+  filepath: string;
+  contentType: string;
+};
+
+const upload = async (options: UploadOptions): Promise<UploadResponse> => {
+  const { session, filepath, contentType } = options;
+
   const uploadURL = `https://${briefly.config.NHOST_ID}.storage.eu-central-1.nhost.run/v1/files`;
 
-  const audioFile = new NodeOnDiskFile(audioFilepath, "audio/aac");
+  const file = new NodeOnDiskFile(filepath, contentType);
 
   const form = new FormData();
-  form.append("file", audioFile);
+  form.append("file", file);
 
   const fileInfoResponse = await fetch(uploadURL, {
     method: "POST",

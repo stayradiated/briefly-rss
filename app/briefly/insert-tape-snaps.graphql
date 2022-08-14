@@ -1,0 +1,7 @@
+mutation InsertTapeSnaps($snaps: [tape_snap_file_insert_input!]!) {
+  insert_tape_snap_file(objects: $snaps) {
+    returning {
+      id
+    }
+  }
+}

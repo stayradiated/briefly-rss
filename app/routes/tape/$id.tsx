@@ -37,6 +37,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 type Comment = {
+  id: string;
   created_at: string;
   profile?: { username?: string | null } | null;
   body: string;

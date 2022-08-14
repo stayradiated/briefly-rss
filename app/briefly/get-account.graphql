@@ -1,0 +1,8 @@
+query GetProfile($userUID: uuid!) {
+  profile_by_pk(id: $userUID) {
+    avatar_id
+    id
+    private
+    username
+  }
+}

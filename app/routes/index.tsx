@@ -36,13 +36,16 @@ const IndexRoute = () => {
               </p>
             </li>
             <li>
-              <Link to="./upload">Upload</Link>
+              <Link to="./upload">Create Tape</Link>
             </li>
             <li>
               <Link to="./friends-tapes">Friends Tapes</Link>
             </li>
             <li>
               <Link to="./my-tapes">My Tapes</Link>
+            </li>
+            <li>
+              <Link to="./account">Change Username</Link>
             </li>
             <li>
               <Link to="./logout">Logout</Link>
@@ -58,6 +61,11 @@ const IndexRoute = () => {
             <li>
               <Link reloadDocument to="./friends-tapes.json">
                 <code>./friends-tapes.json</code>
+              </Link>
+            </li>
+            <li>
+              <Link reloadDocument to="./friends-tapes.rss">
+                <code>./friends-tapes.rss</code>
               </Link>
             </li>
           </ul>

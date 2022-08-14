@@ -60,4 +60,18 @@ const getAudioDurationMS = async (filepath: string): Promise<number> => {
   return Number.parseFloat(root.media.track[0].Duration) * 1000;
 };
 
-export { mediainfo, getAudioDurationMS };
+type MediaType = "audio" | "image" | "unknown";
+
+const getMediaType = async (filepath: string): Promise<MediaType> => {
+  const result = await mediainfo([filepath, "--Output=JSON"]);
+  const root = JSON.parse(result.stdout) as MediaInfo;
+  const track = root.media.track.find((track) => {
+    return track["@type"] !== "General";
+  });
+  if (!track) {
+    return "unknown";
+  }
+  return track["@type"].toLowerCase() as MediaType;
+};
+
+export { mediainfo, getAudioDurationMS, getMediaType };

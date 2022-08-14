@@ -1,0 +1,9 @@
+mutation UpdateUsername($username: String!, $userUID: uuid!) {
+  update_profile_by_pk(
+    pk_columns: { id: $userUID }
+    _set: { username: $username }
+  ) {
+    id
+    username
+  }
+}
