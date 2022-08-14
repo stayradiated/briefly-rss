@@ -6,6 +6,7 @@
   "scripts": {
     "build": "remix build",
     "build:tsc": "tsc --noEmit",
+    "build:ncc": "ncc build ./build/index.js",
     "tidy": "prettier --write ./app",
     "start": "remix-serve build",
     "dev": "remix dev",
@@ -53,6 +54,7 @@
     "@types/qs": "6.9.7",
     "@types/react": "18.0.17",
     "@types/react-dom": "18.0.6",
+    "@vercel/ncc": "0.34.0",
     "prettier": "2.7.1",
     "typescript": "4.7.4"
   }

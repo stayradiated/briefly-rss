@@ -4,6 +4,7 @@ node_modules
 /build
 /public/build
 /bin
+/dist
 .env
 
 *.m4a

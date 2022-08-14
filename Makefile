@@ -1,6 +1,9 @@
 .PHONY: build run
 
 build:
+	pnpm install --frozen-lockfile
+	pnpm run build
+	pnpm run build:ncc
 	docker build -t stayradiated/debrief:latest .
 
 run:
