@@ -8,7 +8,9 @@ query GetTapeById($id: uuid!) {
       username
     }
     tape_snap_files {
+      id
       path
+      second
     }
     comments(
       where: { parent_comment_id: { _is_null: true } }

@@ -3651,71 +3651,6 @@ export type GetProfileQuery = {
   } | null;
 };
 
-export type GetFriendsTapesQueryVariables = Exact<{
-  now?: InputMaybe<Scalars["timestamptz"]>;
-  user_id: Scalars["uuid"];
-}>;
-
-export type GetFriendsTapesQuery = {
-  __typename?: "query_root";
-  friend: Array<{
-    __typename?: "friend";
-    friend_profile?: {
-      __typename?: "profile";
-      id: string;
-      username?: string | null;
-      avatar_id?: string | null;
-      tapes: Array<{
-        __typename?: "tape";
-        id: string;
-        duration: number;
-        created_at: string;
-        path: string;
-        is_public: boolean;
-        tape_snap_files: Array<{ __typename?: "tape_snap_file"; id: string }>;
-        comments_aggregate: {
-          __typename?: "comment_aggregate";
-          aggregate?: {
-            __typename?: "comment_aggregate_fields";
-            count: number;
-          } | null;
-        };
-      }>;
-    } | null;
-  }>;
-};
-
-export type GetMyTapesQueryVariables = Exact<{
-  user_id: Scalars["uuid"];
-  now?: InputMaybe<Scalars["timestamptz"]>;
-}>;
-
-export type GetMyTapesQuery = {
-  __typename?: "query_root";
-  profile_by_pk?: {
-    __typename?: "profile";
-    id: string;
-    username?: string | null;
-    avatar_id?: string | null;
-    tapes: Array<{
-      __typename?: "tape";
-      id: string;
-      duration: number;
-      created_at: string;
-      path: string;
-      is_public: boolean;
-      tape_snap_files: Array<{ __typename?: "tape_snap_file"; path: string }>;
-      comments_aggregate: {
-        __typename?: "comment_aggregate";
-        aggregate?: {
-          __typename?: "comment_aggregate_fields";
-          count: number;
-        } | null;
-      };
-    }>;
-  } | null;
-};
-
 export type GetTapeByIdQueryVariables = Exact<{
   id: Scalars["uuid"];
 }>;
@@ -3729,7 +3664,12 @@ export type GetTapeByIdQuery = {
     created_at: string;
     duration: number;
     profile?: { __typename?: "profile"; username?: string | null } | null;
-    tape_snap_files: Array<{ __typename?: "tape_snap_file"; path: string }>;
+    tape_snap_files: Array<{
+      __typename?: "tape_snap_file";
+      id: string;
+      path: string;
+      second: number;
+    }>;
     comments: Array<{
       __typename?: "comment";
       id: string;
@@ -3789,6 +3729,134 @@ export type UpdateUsernameMutation = {
   } | null;
 };
 
+export type TapeFragment = {
+  __typename?: "tape";
+  id: string;
+  duration: number;
+  created_at: string;
+  path: string;
+  is_public: boolean;
+  tape_snap_files: Array<{ __typename?: "tape_snap_file"; id: string }>;
+  comments_aggregate: {
+    __typename?: "comment_aggregate";
+    aggregate?: {
+      __typename?: "comment_aggregate_fields";
+      count: number;
+    } | null;
+  };
+};
+
+export type ProfileFragment = {
+  __typename?: "profile";
+  id: string;
+  username?: string | null;
+  avatar_id?: string | null;
+  tapes: Array<{
+    __typename?: "tape";
+    id: string;
+    duration: number;
+    created_at: string;
+    path: string;
+    is_public: boolean;
+    tape_snap_files: Array<{ __typename?: "tape_snap_file"; id: string }>;
+    comments_aggregate: {
+      __typename?: "comment_aggregate";
+      aggregate?: {
+        __typename?: "comment_aggregate_fields";
+        count: number;
+      } | null;
+    };
+  }>;
+};
+
+export type GetTapesQueryVariables = Exact<{
+  now?: InputMaybe<Scalars["timestamptz"]>;
+  user_id: Scalars["uuid"];
+}>;
+
+export type GetTapesQuery = {
+  __typename?: "query_root";
+  me?: {
+    __typename?: "profile";
+    id: string;
+    username?: string | null;
+    avatar_id?: string | null;
+    tapes: Array<{
+      __typename?: "tape";
+      id: string;
+      duration: number;
+      created_at: string;
+      path: string;
+      is_public: boolean;
+      tape_snap_files: Array<{ __typename?: "tape_snap_file"; id: string }>;
+      comments_aggregate: {
+        __typename?: "comment_aggregate";
+        aggregate?: {
+          __typename?: "comment_aggregate_fields";
+          count: number;
+        } | null;
+      };
+    }>;
+  } | null;
+  friend: Array<{
+    __typename?: "friend";
+    friend_profile?: {
+      __typename?: "profile";
+      id: string;
+      username?: string | null;
+      avatar_id?: string | null;
+      tapes: Array<{
+        __typename?: "tape";
+        id: string;
+        duration: number;
+        created_at: string;
+        path: string;
+        is_public: boolean;
+        tape_snap_files: Array<{ __typename?: "tape_snap_file"; id: string }>;
+        comments_aggregate: {
+          __typename?: "comment_aggregate";
+          aggregate?: {
+            __typename?: "comment_aggregate_fields";
+            count: number;
+          } | null;
+        };
+      }>;
+    } | null;
+  }>;
+};
+
+export const TapeFragmentDoc = gql`
+  fragment Tape on tape {
+    id
+    duration
+    created_at
+    path
+    is_public
+    tape_snap_files(limit: 1) {
+      id
+    }
+    comments_aggregate {
+      aggregate {
+        count
+      }
+    }
+  }
+`;
+export const ProfileFragmentDoc = gql`
+  fragment Profile on profile {
+    id
+    username
+    avatar_id
+    tapes(
+      order_by: { created_at: desc }
+      where: { expires_at: { _gt: $now } }
+      limit: 10
+    ) {
+      ...Tape
+    }
+  }
+  ${TapeFragmentDoc}
+`;
 export const GetProfileDocument = gql`
   query GetProfile($userUID: uuid!) {
     profile_by_pk(id: $userUID) {
@@ -3796,69 +3864,6 @@ export const GetProfileDocument = gql`
       id
       private
       username
-    }
-  }
-`;
-export const GetFriendsTapesDocument = gql`
-  query GetFriendsTapes($now: timestamptz, $user_id: uuid!) {
-    friend(
-      where: { user_id: { _eq: $user_id } }
-      order_by: {
-        friend_profile: {
-          tapes_aggregate: { max: { created_at: desc_nulls_last } }
-        }
-      }
-    ) {
-      friend_profile {
-        id
-        username
-        avatar_id
-        tapes(
-          order_by: { created_at: desc }
-          where: { expires_at: { _gt: $now } }
-        ) {
-          id
-          duration
-          created_at
-          path
-          is_public
-          tape_snap_files(limit: 1) {
-            id
-          }
-          comments_aggregate {
-            aggregate {
-              count
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-export const GetMyTapesDocument = gql`
-  query GetMyTapes($user_id: uuid!, $now: timestamptz) {
-    profile_by_pk(id: $user_id) {
-      id
-      username
-      avatar_id
-      tapes(
-        order_by: { created_at: desc }
-        where: { expires_at: { _gt: $now } }
-      ) {
-        id
-        duration
-        created_at
-        path
-        is_public
-        tape_snap_files(limit: 1) {
-          path
-        }
-        comments_aggregate {
-          aggregate {
-            count
-          }
-        }
-      }
     }
   }
 `;
@@ -3873,7 +3878,9 @@ export const GetTapeByIdDocument = gql`
         username
       }
       tape_snap_files {
+        id
         path
+        second
       }
       comments(
         where: { parent_comment_id: { _is_null: true } }
@@ -3944,6 +3951,26 @@ export const UpdateUsernameDocument = gql`
     }
   }
 `;
+export const GetTapesDocument = gql`
+  query GetTapes($now: timestamptz, $user_id: uuid!) {
+    me: profile_by_pk(id: $user_id) {
+      ...Profile
+    }
+    friend(
+      where: { user_id: { _eq: $user_id } }
+      order_by: {
+        friend_profile: {
+          tapes_aggregate: { max: { created_at: desc_nulls_last } }
+        }
+      }
+    ) {
+      friend_profile {
+        ...Profile
+      }
+    }
+  }
+  ${ProfileFragmentDoc}
+`;
 
 export type SdkFunctionWrapper = <T>(
   action: (requestHeaders?: Record<string, string>) => Promise<T>,
@@ -3973,35 +4000,6 @@ export function getSdk(
             ...wrappedRequestHeaders,
           }),
         "GetProfile",
-        "query"
-      );
-    },
-    GetFriendsTapes(
-      variables: GetFriendsTapesQueryVariables,
-      requestHeaders?: Dom.RequestInit["headers"]
-    ): Promise<GetFriendsTapesQuery> {
-      return withWrapper(
-        (wrappedRequestHeaders) =>
-          client.request<GetFriendsTapesQuery>(
-            GetFriendsTapesDocument,
-            variables,
-            { ...requestHeaders, ...wrappedRequestHeaders }
-          ),
-        "GetFriendsTapes",
-        "query"
-      );
-    },
-    GetMyTapes(
-      variables: GetMyTapesQueryVariables,
-      requestHeaders?: Dom.RequestInit["headers"]
-    ): Promise<GetMyTapesQuery> {
-      return withWrapper(
-        (wrappedRequestHeaders) =>
-          client.request<GetMyTapesQuery>(GetMyTapesDocument, variables, {
-            ...requestHeaders,
-            ...wrappedRequestHeaders,
-          }),
-        "GetMyTapes",
         "query"
       );
     },
@@ -4061,6 +4059,20 @@ export function getSdk(
           ),
         "UpdateUsername",
         "mutation"
+      );
+    },
+    GetTapes(
+      variables: GetTapesQueryVariables,
+      requestHeaders?: Dom.RequestInit["headers"]
+    ): Promise<GetTapesQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<GetTapesQuery>(GetTapesDocument, variables, {
+            ...requestHeaders,
+            ...wrappedRequestHeaders,
+          }),
+        "GetTapes",
+        "query"
       );
     },
   };

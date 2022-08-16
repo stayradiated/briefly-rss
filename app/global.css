@@ -1,0 +1,19 @@
+:root {
+  --dark: #514f5f;
+  --light: #f5f7f5;
+}
+
+body {
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  margin: 0;
+  background-color: var(--dark);
+  color: var(--light);
+
+  /* font list from water.css */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji",
+    sans-serif;
+}

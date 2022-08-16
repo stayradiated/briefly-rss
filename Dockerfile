@@ -11,8 +11,6 @@ WORKDIR /app
 COPY ./dist/ ./
 COPY ./public/ ./public/
 
-RUN echo '{"scripts":{"start":"remix-serve index.js"}}' > ./package.json
-
 ENV NODE_ENV=production
 
-CMD npm run start
+CMD remix-serve index.js

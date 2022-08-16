@@ -11,7 +11,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   const sdk = briefly.getClient(session);
 
-  const tapes = await sdk.GetFriendsTapes({
+  const tapes = await sdk.GetTapes({
     now: dateFns.formatISO(new Date()),
     user_id: session.userUID,
   });

@@ -9,7 +9,7 @@ module.exports = {
       // },
     },
   ],
-  documents: ['./app/**/*.graphql'],
+  documents: ['./app/**/*.graphql', './app/**/*.tsx'],
   overwrite: true,
   generates: {
     './graphql.schema.json': {
