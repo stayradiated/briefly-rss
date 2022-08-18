@@ -1,16 +1,102 @@
 import { useRef, useEffect, useState, useMemo } from "react";
-import { LoaderFunction, json } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  ActionFunction,
+  LoaderFunction,
+  json,
+  redirect,
+} from "@remix-run/node";
+import { useTransition, useLoaderData, Link, Form } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import * as dateFns from "date-fns";
 import styled from "styled-components";
 import { last } from "rambda";
+import { makeDomainFunction, inputFromFormData } from "remix-domains";
+import * as z from "zod";
 
 import * as briefly from "../../briefly";
 import { GetTapeByIdQuery } from "../../briefly/graphql/generated";
 import { useImagePreloader } from "../../components/useImagePreloader";
+import { Button } from "../../components/Button";
+import { TextArea } from "../../components/TextArea";
 
 type Tape = NonNullable<GetTapeByIdQuery["tape_by_pk"]>;
+
+/* GraphQL */ `
+mutation InsertComment(
+  $body: String!,
+  $ms: Int!,
+  $parent_comment_id: uuid,
+  $tape_id: uuid!,
+  $seen_by_tape_owner_at: timestamptz
+) {
+  insert_comment_one(object: {
+    body: $body,
+    ms: $ms,
+    parent_comment_id: $parent_comment_id,
+    tape_id: $tape_id,
+    seen_by_tape_owner_at: $seen_by_tape_owner_at
+  }) {
+    id
+  }
+}
+`;
+
+const insertComment = makeDomainFunction(
+  z.object({
+    body: z.string(),
+    ms: z.preprocess((arg) => Number.parseFloat(String(arg)), z.number()),
+  }),
+  z.object({
+    tapeID: z.string(),
+    session: briefly.userSessionSchema,
+  })
+)((input, environment) => {
+  const { body, ms } = input;
+  const { tapeID, session } = environment;
+  const sdk = briefly.getClient(session);
+  return sdk.InsertComment(
+    {
+      body,
+      ms,
+      parent_comment_id: undefined,
+      tape_id: tapeID,
+      seen_by_tape_owner_at: undefined,
+    },
+    {
+      authorization: `Bearer ${session.accessToken}`,
+    }
+  );
+});
+
+export const action: ActionFunction = async ({ request, params }) => {
+  const session = await briefly.getSession(request);
+  if (!session.accessToken) {
+    return redirect("/login");
+  }
+
+  const { id: tapeID } = params;
+  invariant(typeof tapeID === "string", "params.id is required");
+
+  const formData = await request.formData();
+  const action = formData.get("_action");
+
+  switch (action) {
+    case "insertComment": {
+      const result = await insertComment(inputFromFormData(formData), {
+        tapeID,
+        session,
+      });
+      if (!result.success) {
+        console.error(result);
+        throw new Error("Could not insert comment.");
+      }
+      return null;
+    }
+    default: {
+      throw new Error(`Unsupported action: ${action}`);
+    }
+  }
+};
 
 type LoaderData = {
   tape: Tape;
@@ -18,6 +104,10 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const session = await briefly.getSession(request);
+  if (!session.accessToken) {
+    return redirect("/login");
+  }
+
   const sdk = briefly.getClient(session);
 
   const { id } = params;
@@ -39,6 +129,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     }
   );
 };
+
+const CommentForm = styled(Form)`
+  padding: 0 1em;
+`;
 
 const Title = styled.h1`
   a {
@@ -127,11 +221,23 @@ const CommentList: React.FC<CommentListProps> = (props) => {
 
 const TapeRoute = () => {
   const { tape } = useLoaderData<LoaderData>();
+  const transition = useTransition();
 
   const [currentTime, setCurrentTime] = useState(0);
   const [focus, setFocus] = useState(false);
 
   const tapeDate = dateFns.format(dateFns.parseISO(tape.created_at), "EEEE p");
+
+  const isInsertingComment =
+    transition.state === "submitting" &&
+    transition.submission?.formData.get("_action") === "insertComment";
+
+  const commentFormRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (!isInsertingComment) {
+      commentFormRef.current?.reset();
+    }
+  }, [isInsertingComment]);
 
   const imgSrcPaths = useMemo(() => {
     return tape.tape_snap_files.map((snap) => snap.path);
@@ -166,23 +272,32 @@ const TapeRoute = () => {
   const stopPropagation = (e: React.TouchEvent) => e.stopPropagation();
 
   return (
-    <main
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleTouchStart}
-      onMouseUp={handleTouchEnd}
-    >
-      <Metadata focus={focus} onTouchStart={stopPropagation}>
-        <Title>
-          <Link to="/">{tape.profile?.username}</Link>
-        </Title>
-        <h3>{tapeDate}</h3>
-        <Audio ref={audioRef} src={tape.path} autoPlay controls />
-      </Metadata>
-      <ImgContainer>
-        {currentSnap ? <Img src={currentSnap.path} /> : <NoImg />}
-      </ImgContainer>
+    <main>
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleTouchStart}
+        onMouseUp={handleTouchEnd}
+      >
+        <Metadata focus={focus} onTouchStart={stopPropagation}>
+          <Title>
+            <Link to="/">{tape.profile?.username}</Link>
+          </Title>
+          <h3>{tapeDate}</h3>
+          <Audio ref={audioRef} src={tape.path} autoPlay controls />
+        </Metadata>
+        <ImgContainer>
+          {currentSnap ? <Img src={currentSnap.path} /> : <NoImg />}
+        </ImgContainer>
+      </div>
       <CommentList comments={tape.comments} />
+      <CommentForm method="post" ref={commentFormRef}>
+        <input type="hidden" name="ms" value={Math.round(currentTime * 1000)} />
+        <TextArea rows={2} placeholder="Add Comment" name="body" />
+        <Button name="_action" value="insertComment">
+          Send
+        </Button>
+      </CommentForm>
     </main>
   );
 };

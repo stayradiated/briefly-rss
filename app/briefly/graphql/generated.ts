@@ -3825,6 +3825,19 @@ export type GetTapesQuery = {
   }>;
 };
 
+export type InsertCommentMutationVariables = Exact<{
+  body: Scalars["String"];
+  ms: Scalars["Int"];
+  parent_comment_id?: InputMaybe<Scalars["uuid"]>;
+  tape_id: Scalars["uuid"];
+  seen_by_tape_owner_at?: InputMaybe<Scalars["timestamptz"]>;
+}>;
+
+export type InsertCommentMutation = {
+  __typename?: "mutation_root";
+  insert_comment_one?: { __typename?: "comment"; id: string } | null;
+};
+
 export const TapeFragmentDoc = gql`
   fragment Tape on tape {
     id
@@ -3971,6 +3984,27 @@ export const GetTapesDocument = gql`
   }
   ${ProfileFragmentDoc}
 `;
+export const InsertCommentDocument = gql`
+  mutation InsertComment(
+    $body: String!
+    $ms: Int!
+    $parent_comment_id: uuid
+    $tape_id: uuid!
+    $seen_by_tape_owner_at: timestamptz
+  ) {
+    insert_comment_one(
+      object: {
+        body: $body
+        ms: $ms
+        parent_comment_id: $parent_comment_id
+        tape_id: $tape_id
+        seen_by_tape_owner_at: $seen_by_tape_owner_at
+      }
+    ) {
+      id
+    }
+  }
+`;
 
 export type SdkFunctionWrapper = <T>(
   action: (requestHeaders?: Record<string, string>) => Promise<T>,
@@ -4073,6 +4107,21 @@ export function getSdk(
           }),
         "GetTapes",
         "query"
+      );
+    },
+    InsertComment(
+      variables: InsertCommentMutationVariables,
+      requestHeaders?: Dom.RequestInit["headers"]
+    ): Promise<InsertCommentMutation> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<InsertCommentMutation>(
+            InsertCommentDocument,
+            variables,
+            { ...requestHeaders, ...wrappedRequestHeaders }
+          ),
+        "InsertComment",
+        "mutation"
       );
     },
   };
